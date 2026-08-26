@@ -446,7 +446,8 @@ public class DefaultMcpServer implements McpServerExtension {
             if (parentItem instanceof ModifiableTopLevelItemGroup) {
                 parent = (ModifiableTopLevelItemGroup) parentItem;
             } else {
-                throw new IllegalArgumentException("Parent folder '" + parentName + "' does not exist or cannot contain jobs.");
+                throw new IllegalArgumentException(
+                        "Parent folder '" + parentName + "' does not exist or cannot contain jobs.");
             }
         }
 
@@ -454,15 +455,15 @@ public class DefaultMcpServer implements McpServerExtension {
             throw new IllegalArgumentException("A job with name '" + jobName + "' already exists.");
         }
 
-        String xml = "<?xml version='1.1' encoding='UTF-8'?>\n" +
-                "<flow-definition plugin=\"workflow-job\">\n" +
-                "  <definition class=\"org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition\" plugin=\"workflow-cps\">\n" +
-                "    <script>" + hudson.Util.xmlEscape(pipelineScript) + "</script>\n" +
-                "    <sandbox>true</sandbox>\n" +
-                "  </definition>\n" +
-                "</flow-definition>";
+        String xml = "<?xml version='1.1' encoding='UTF-8'?>\n" + "<flow-definition plugin=\"workflow-job\">\n"
+                + "  <definition class=\"org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition\" plugin=\"workflow-cps\">\n"
+                + "    <script>"
+                + hudson.Util.xmlEscape(pipelineScript) + "</script>\n" + "    <sandbox>true</sandbox>\n"
+                + "  </definition>\n"
+                + "</flow-definition>";
 
-        Item createdJob = parent.createProjectFromXML(name, new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+        Item createdJob =
+                parent.createProjectFromXML(name, new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
         return jenkins.getRootUrl() + createdJob.getUrl();
     }
 }

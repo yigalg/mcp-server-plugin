@@ -441,8 +441,8 @@ class DefaultMcpServerTest {
     }
 
     @McpClientTest
-    void testMcpToolCallCreatePipelineAlreadyExists(JenkinsRule jenkins, JenkinsMcpClientBuilder jenkinsMcpClientBuilder)
-            throws Exception {
+    void testMcpToolCallCreatePipelineAlreadyExists(
+            JenkinsRule jenkins, JenkinsMcpClientBuilder jenkinsMcpClientBuilder) throws Exception {
         jenkins.createProject(WorkflowJob.class, "existing-job");
         try (var client = jenkinsMcpClientBuilder.jenkins(jenkins).build()) {
             McpSchema.CallToolRequest request = new McpSchema.CallToolRequest(
