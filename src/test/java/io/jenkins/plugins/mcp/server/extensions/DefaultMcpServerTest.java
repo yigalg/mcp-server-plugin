@@ -457,4 +457,45 @@ class DefaultMcpServerTest {
             });
         }
     }
+
+    @McpClientTest
+    void testMcpToolCallCreatePipelineInFolder(JenkinsRule jenkins, JenkinsMcpClientBuilder jenkinsMcpClientBuilder)
+            throws Exception {
+        jenkins.createFolder("my-folder");
+        try (var client = jenkinsMcpClientBuilder.jenkins(jenkins).build()) {
+            McpSchema.CallToolRequest request = new McpSchema.CallToolRequest(
+                    "createPipeline",
+                    Map.of("jobName", "my-folder/new-pipeline-job", "pipelineScript", "echo 'in folder'"));
+
+            var response = client.callTool(request);
+            assertThat(response.isError()).isFalse();
+            assertThat(response.content()).hasSize(1);
+            assertThat(response.content().get(0).type()).isEqualTo("text");
+
+            var job = jenkins.jenkins.getItemByFullName("my-folder/new-pipeline-job");
+            assertThat(job).isNotNull();
+            assertThat(job).isInstanceOf(WorkflowJob.class);
+            var definition = ((WorkflowJob) job).getDefinition();
+            assertThat(definition).isInstanceOf(CpsFlowDefinition.class);
+            assertThat(((CpsFlowDefinition) definition).getScript()).isEqualTo("echo 'in folder'");
+        }
+    }
+
+    @McpClientTest
+    void testMcpToolCallCreatePipelineInInvalidFolder(
+            JenkinsRule jenkins, JenkinsMcpClientBuilder jenkinsMcpClientBuilder) throws Exception {
+        try (var client = jenkinsMcpClientBuilder.jenkins(jenkins).build()) {
+            McpSchema.CallToolRequest request = new McpSchema.CallToolRequest(
+                    "createPipeline",
+                    Map.of("jobName", "nonexistent-folder/new-pipeline-job", "pipelineScript", "echo 'hello'"));
+
+            var response = client.callTool(request);
+            assertThat(response.isError()).isTrue();
+            assertThat(response.content()).hasSize(1);
+            assertThat(response.content().get(0).type()).isEqualTo("text");
+            assertThat(response.content()).first().isInstanceOfSatisfying(McpSchema.TextContent.class, textContent -> {
+                assertThat(textContent.text()).contains("does not exist or cannot contain jobs");
+            });
+        }
+    }
 }
